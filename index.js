@@ -1,46 +1,7 @@
-const { REST } = require('@discordjs/rest')
-const { Routes } = require('discord-api-types/v9')
-require('dotenv').config()
-
-const commands = [
-  {
-    name: 'play',
-    description: 'Plays a song!',
-    options: [
-      {
-        name: 'query',
-        type: 3,
-        description: 'The song you want to play',
-        required: true
-      }
-    ]
-  }
-]
-
-const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN)
-
-;(async () => {
-  try {
-    console.log('Started refreshing application [/] commands.')
-
-    await rest.put(
-      Routes.applicationGuildCommands(
-        process.env.CLIENT_ID,
-        process.env.GUILD_ID
-      ),
-      {
-        body: commands
-      }
-    )
-
-    console.log('Successfully reloaded application [/] commands.')
-  } catch (error) {
-    console.error(error)
-  }
-})()
-
 const { Client, Intents } = require('discord.js')
 const Discord = require('discord.js')
+const config = require('./command_config.js')
+const { Player } = require('discord-player')
 const client = new Discord.Client({
   intents: [
     Intents.FLAGS.GUILDS,
@@ -48,8 +9,11 @@ const client = new Discord.Client({
     Intents.FLAGS.GUILD_VOICE_STATES
   ]
 })
-const { Player } = require('discord-player')
+;(async () => {
+  await config.SetBotCommands()
+})()
 
+// --------------------------------------------------------------------------------------- //
 // Create a new Player (you don't need any API Key)
 const player = new Player(client)
 
@@ -57,11 +21,14 @@ const player = new Player(client)
 player.on('trackStart', (queue, track) =>
   queue.metadata.channel.send(`🎶 | Now playing **${track.title}**!`)
 )
+// --------------------------------------------------------------------------------------- //
 
+// --------------------------------------------------------------------------------------- //
+//create client
 client.once('ready', () => {
   console.log("I'm ready !")
 })
-
+// --------------------------------------------------------------------------------------- //
 client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return
 
@@ -106,13 +73,18 @@ client.on('interactionCreate', async interaction => {
       .search(query, {
         requestedBy: interaction.user
       })
-      .then(x => x.tracks[0])
+      .then(x => x.tracks)
     if (!track)
       return await interaction.followUp({
         content: `❌ | Track **${query}** not found!`
       })
+    if (track.length == 1) {
+      queue.addTrack(track)
+    } else {
+      queue.addTracks(track)
+    }
 
-    queue.play(track)
+    queue.play()
 
     return await interaction.followUp({
       content: `⏱️ | Loading track **${track.title}**!`
