@@ -36,7 +36,7 @@ module.exports.SetBotCommands = async function () {
       {
         body: commands
       }
-    )
+    ).then()
 
     console.log('Successfully reloaded application [/] commands.')
   } catch (error) {
