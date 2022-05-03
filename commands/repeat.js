@@ -5,7 +5,7 @@ module.exports = {
     .setName('repeat')
     .setDescription('🔁 Sets a song or playlist to loop!'),
 
-  async execute (interaction) {
+  async execute (interaction, player) {
     await interaction.reply('lets do the time warp again')
   }
 }

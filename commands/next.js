@@ -5,7 +5,7 @@ module.exports = {
     .setName('next')
     .setDescription('⏭️  Skips to the next song!'),
 
-  async execute (interaction) {
+  async execute (interaction, player) {
     await interaction.reply('lets do the time warp again')
   }
 }

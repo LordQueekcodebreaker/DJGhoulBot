@@ -1,7 +1,15 @@
 const fs = require('node:fs')
 const { Client, Collection, Intents } = require('discord.js')
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] })
+const client = new Client({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_VOICE_STATES
+  ]
+})
+const { Player } = require('discord-player')
 const deploy = require('./deploy-commands.js')
+const playerHandler = require('./player-handler.js')
 require('dotenv').config()
 
 client.commands = new Collection()
@@ -22,11 +30,13 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isCommand()) return
 
   const command = client.commands.get(interaction.commandName)
+  const player = new playerHandler(client)
+  Object.freeze(player)
 
   if (!command) return
 
   try {
-    await command.execute(interaction)
+    await command.execute(interaction, player)
   } catch (error) {
     console.error(error)
     await interaction.reply({
