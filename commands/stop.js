@@ -1,5 +1,5 @@
-const { SlashCommandBuilder } = require('@discordjs/builders')
 require('dotenv').config()
+const { SlashCommandBuilder } = require('@discordjs/builders')
 const guildId = process.env.GUILD_ID
 
 module.exports = {
@@ -8,9 +8,6 @@ module.exports = {
     .setDescription('⏹️ Stops the player!'),
 
   async execute (interaction, player) {
-    //check is command
-    if (!interaction.isCommand()) return
-
     const queue = await player.getQueue(guildId)
     //check if playing
     if (!queue.nowPlaying()) {
