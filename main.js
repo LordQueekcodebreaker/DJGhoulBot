@@ -8,8 +8,8 @@ const client = new Client({
   ]
 })
 const { Player } = require('discord-player')
-const deploy = require('./deploy-commands.js')
-const playerHandler = require('./player-handler.js')
+const deploy = require('./helpers/deploy-commands.js')
+const playerHandler = require('./helpers/player-handler.js')
 require('dotenv').config()
 
 client.commands = new Collection()
