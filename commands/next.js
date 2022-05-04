@@ -10,17 +10,17 @@ module.exports = {
   async execute (interaction, player) {
     const queue = await player.getQueue(guildId)
     //check if playing
-    const currentTrack = queue.nowPlaying()
-    if (currentTrack === undefined) {
+    if (queue === undefined) {
       return await interaction.reply({
-        content: 'No song is currently playing',
+        content: 'No song is playing',
         ephemeral: true
       })
     } else {
+      const currentTrack = queue.nowPlaying()
       const position = queue.getTrackPosition(currentTrack)
       if (position >= queue.tracks.length - 1) {
         return await interaction.reply({
-          content: 'No next song to skip to',
+          content: 'No song to skip to',
           ephemeral: true
         })
       } else {

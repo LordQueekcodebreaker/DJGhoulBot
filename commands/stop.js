@@ -10,9 +10,9 @@ module.exports = {
   async execute (interaction, player) {
     const queue = await player.getQueue(guildId)
     //check if playing
-    if (!queue.nowPlaying()) {
+    if (queue === undefined) {
       return await interaction.reply({
-        content: 'No song is currently playing',
+        content: 'No song is playing',
         ephemeral: true
       })
     } else {
