@@ -1,45 +1,53 @@
-const Discord = require('discord.js')
-const { Client, Intents } = require('discord.js')
-const { REST } = require('@discordjs/rest')
-const { Routes } = require('discord-api-types/v9')
-const fs = require('fs')
+const fs = require('node:fs')
+const { Client, Collection, Intents } = require('discord.js')
+const client = new Client({
+  intents: [
+    Intents.FLAGS.GUILDS,
+    Intents.FLAGS.GUILD_MESSAGES,
+    Intents.FLAGS.GUILD_VOICE_STATES
+  ]
+})
 const { Player } = require('discord-player')
-const { CLIENT_RENEG_LIMIT } = require('tls')
+const deploy = require('./deploy-commands.js')
+const playerHandler = require('./player-handler.js')
 require('dotenv').config()
 
-const token = process.env.DISCORD_TOKEN
-const load_slash = process.argv[2] == 'load'
+client.commands = new Collection()
+const commandfiles = fs
+  .readdirSync('./commands')
+  .filter(file => file.endsWith('js'))
 
-// Create a new client instance
-const client = new Client({
-  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES]
-})
-
-client.slashcommands = new Discord.Collection()
-client.player = new Player(client, {
-  ytdlOptions: {
-    quality: 'highestaudio',
-    highWaterMark: 1 << 25
-  }
-})
-
-let commands = []
-
-const slashfiles = fs
-  .readdirSync('./slash')
-  .filter(file => file.endsWith('.js'))
-for (const file of slashfiles) {
-  const slashcmd = require(`./slash/${file}`)
-  client.slashcommands.set(slashcmd.data.name, slashcmd)
-  if (load_slash) {
-    commands.push(slashcmd.data.toJSON())
-  }
+for (const file in commandfiles) {
+  const command = require(`./commands/${commandfiles[file]}`)
+  client.commands.set(command.data.name, command)
 }
 
-// When the client is ready, run this code (only once)
-client.once('ready', () => {
-  console.log('Ready!')
+;(async () => {
+  await deploy.deployCommands()
+})()
+
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isCommand()) return
+
+  const command = client.commands.get(interaction.commandName)
+  const player = new playerHandler(client)
+  Object.freeze(player)
+
+  if (!command) return
+
+  try {
+    await command.execute(interaction, player)
+  } catch (error) {
+    console.error(error)
+    await interaction.reply({
+      content: 'There was an error while executing this command!',
+      ephemeral: true
+    })
+  }
 })
 
-// Login to Discord with your client's token
-client.login(token)
+client.once('ready', () => {
+  console.log('Ready to test!')
+})
+
+client.login(process.env.DISCORD_TOKEN)
