@@ -14,6 +14,10 @@ for (const file of commandFiles) {
   commands.push(request)
 }
 
+// module.exports.GetCommands = async function () {
+
+// }
+
 const rest = new REST({ version: '9' }).setToken(process.env.DISCORD_TOKEN)
 module.exports.deployCommands = async function () {
   try {
@@ -30,3 +34,34 @@ module.exports.deployCommands = async function () {
     console.log(error)
   }
 }
+module.exports.getCommands = function () {
+  return new Promise(async function () {
+    try {
+      await rest.get(
+        Routes.applicationGuildCommands(
+          process.env.CLIENT_ID,
+          process.env.GUILD_ID
+        )
+      )
+    } catch (error) {
+      console.log(error)
+    }
+  })
+}
+
+// async function () {
+//   try {
+//     await rest
+//       .get(
+//         Routes.applicationGuildCommands(
+//           process.env.CLIENT_ID,
+//           process.env.GUILD_ID
+//         )
+//       )
+//       .then(result => {
+//         return result
+//       })
+//   } catch (error) {
+//     console.log(error)
+//   }
+// }
